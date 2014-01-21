@@ -13,14 +13,12 @@ namespace Ackroo.Utils.Json
         public string El_Balance { get; set; }
         public string Amount_Funded { get; set; }
         public string Amount_Redeemed { get; set; }
-        public string Error { get; set; }
     }
 
     public class Card
     {
         public string Gift { get; set; }
         public string Loyalty { get; set; }
-        public string Error { get; set; }
     }
 
     public class Error

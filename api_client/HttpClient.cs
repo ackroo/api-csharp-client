@@ -28,15 +28,23 @@ namespace Ackroo.Utils.Http
            //allows for validation of SSL certificates 
            ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(ValidateServerCertificate);
 
-           using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+           try
            {
-               if (response.StatusCode != HttpStatusCode.OK)
-                   throw new Exception(String.Format(
-                   "Server error (HTTP {0}: {1}).",
-                   response.StatusCode,
-                   response.StatusDescription));
+               using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+               {
+                   System.IO.StreamReader sr = new System.IO.StreamReader(response.GetResponseStream());
+                   string resp = sr.ReadToEnd().Trim();
+                   if (response.StatusCode != HttpStatusCode.OK)
+                       throw new Exception(resp);
+                   return resp;
+               }
+           }
+           catch (System.Net.WebException ex)
+           {
+               HttpWebResponse response = ex.Response as HttpWebResponse;
                System.IO.StreamReader sr = new System.IO.StreamReader(response.GetResponseStream());
-               return sr.ReadToEnd().Trim();
+               string resp = sr.ReadToEnd().Trim();
+               throw new Exception(resp);
            }
         }
 
@@ -56,14 +64,23 @@ namespace Ackroo.Utils.Http
             System.IO.Stream os = request.GetRequestStream();
             os.Write(bytes, 0, bytes.Length); //Push it out there
             os.Close();
-
-            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+            try
             {
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    System.IO.StreamReader sr = new System.IO.StreamReader(response.GetResponseStream());
+                    string resp = sr.ReadToEnd().Trim();
+                    if (response.StatusCode != HttpStatusCode.Created)
+                        throw new Exception(resp);
+                    return resp;
+                }
+            }
+            catch (System.Net.WebException ex)
+            {
+                HttpWebResponse response = ex.Response as HttpWebResponse;
                 System.IO.StreamReader sr = new System.IO.StreamReader(response.GetResponseStream());
                 string resp = sr.ReadToEnd().Trim();
-                if (response.StatusCode != HttpStatusCode.Created)
-                    throw new Exception(resp);
-                return resp;
+                throw new Exception(resp);
             }
         }
 

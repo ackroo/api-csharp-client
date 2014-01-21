@@ -2,6 +2,7 @@
 using System.Net;
 using Newtonsoft.Json;
 
+
 namespace Ackroo.Client
 {
     class Program
@@ -14,7 +15,7 @@ namespace Ackroo.Client
                 string card = args[1];
 
                 Console.WriteLine("Checking card balance\n");
-                card_balance(card);
+                card_balance(terminal, card);
 
                 Console.WriteLine("Fund gift for $20\n");
                 fund_gift_transaction(terminal, card, 20);
@@ -38,10 +39,10 @@ namespace Ackroo.Client
 
         }
 
-        public static void card_balance(string card)
+        public static void card_balance(string terminal, string card)
         {
-            string transactionRequest = Ackroo.Utils.Http.Client.CreateRequest("/cardholder/balance");
-            Ackroo.Utils.Json.Card cardResponse = MakeRequest(transactionRequest+build_cardholder_query(card));
+            string transactionRequest = Ackroo.Utils.Http.Client.CreateRequest("/terminal/card/balance");
+            Ackroo.Utils.Json.Card cardResponse = MakeRequest(transactionRequest+build_cardholder_query(card, terminal));
         }
 
         public static void fund_gift_transaction(string terminal, string card, int amount)
@@ -79,9 +80,9 @@ namespace Ackroo.Client
             return query;
         }
 
-        public static string build_cardholder_query(string card)
+        public static string build_cardholder_query(string card, string terminal)
         {
-            string query = "?cardnumber=" + card;
+            string query = "?cardnumber=" + card + "&terminal_serial_number=" + terminal;
             return query;
         }
 
