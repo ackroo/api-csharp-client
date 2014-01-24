@@ -2,18 +2,30 @@
 using System.Net;
 using Newtonsoft.Json;
 
-
 namespace Ackroo.Client
 {
+    static class Constants
+    {
+        public const string oauth_scopes = "terminal transaction";
+        public const string grant_type = "authorization_code";
+        public const string client_id = "a22b1ee5fde572f5f3ec289a22621fe92208f4ae2059f9603cc663abcb303d3b";
+        public const string client_secret = "d55bba344418d8f4e498334e4838a6651c024466489295421e8cd02213aebea7";
+    }
+
     class Program
     {
+        public static string oauth_token = "";
         static void Main(string[] args)
         {
             try
             {
+                
+                Console.WriteLine("Getting oauth access token\n");
+                oauth_flow();
+
                 string terminal = args[0];
                 string card = args[1];
-
+                
                 Console.WriteLine("Checking card balance\n");
                 card_balance(terminal, card);
 
@@ -37,6 +49,59 @@ namespace Ackroo.Client
                 Console.Read();
             }
 
+        }
+
+        public static void oauth_flow()
+        {
+            string oAuthCodeRequest = Ackroo.Utils.Http.Client.CreateOAuthRequest("/oauth/devices/code");
+            string code_query = "client_id=" + Constants.client_id + "&scope=" + Constants.oauth_scopes;
+            try
+            {
+                string code_response = Ackroo.Utils.Http.Client.HttpPost(oAuthCodeRequest, code_query);
+                Console.WriteLine("Debug: " + code_response + "\n");
+                Ackroo.Utils.Json.OAuthCode code = _download_serialized_json_data<Ackroo.Utils.Json.OAuthCode>(code_response);
+                
+                Console.WriteLine("You have been granted a temporary activation PIN by Ackroo that expires in " + code.expires_in/60 + " minutes.\n");
+                Console.WriteLine("Please navigate to " + code.verification_url + " from a browser enabled device, and enter the following code to grant authorization:  \n");
+                Console.WriteLine(code.user_code + "\n");
+                
+                string oAuthTokenRequest = Ackroo.Utils.Http.Client.CreateOAuthRequest("/oauth/token");
+                string token_query = "code=" + code.user_code + "&client_id=" + Constants.client_id + "&client_secret=" + Constants.client_secret + "&grant_type=" + Constants.grant_type;
+
+                
+                do
+                {
+                    System.Threading.Thread.Sleep(code.interval * 1000);
+                    code.expires_in -= code.interval;
+                    if (code.expires_in == 0)
+                        Console.WriteLine("Activation PIN expired!\n");
+
+                    try
+                    {
+                        string token_response = Ackroo.Utils.Http.Client.HttpPost(oAuthTokenRequest, token_query);
+                        Console.WriteLine("Debug: " + token_response + "\n");
+                        Console.WriteLine("Got access token, proceeding ... \n");
+                        Ackroo.Utils.Json.OAuthToken token = _download_serialized_json_data<Ackroo.Utils.Json.OAuthToken>(token_response);
+                        Program.oauth_token = token.access_token;
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        Ackroo.Utils.Json.OAuthTokenError error = _download_serialized_json_data<Ackroo.Utils.Json.OAuthTokenError>(e.Message);
+                        //Console.WriteLine(error.error_description + "\n");
+                        Console.WriteLine("Device code pending authorization by merchant ... \n");
+                    }
+                    
+                } while (true);
+
+                return;
+            }
+            catch (Exception e)
+            {
+                Ackroo.Utils.Json.Error error = _download_serialized_json_data<Ackroo.Utils.Json.Error>(e.Message);
+                Console.WriteLine(e.Message);
+                return;
+            }
         }
 
         public static void card_balance(string terminal, string card)
