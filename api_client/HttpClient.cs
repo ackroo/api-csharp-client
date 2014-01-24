@@ -21,14 +21,14 @@ namespace Ackroo.Utils.Http
         //Create the request URL
         public static string CreateRequest(string path)
         {
-            string UrlRequest = "https://api.ackroo.net" + path;
+            string UrlRequest = Ackroo.Client.Constants.ackroo_api_url + path;
             return (UrlRequest);
         }
 
         //Create the request URL
         public static string CreateOAuthRequest(string path)
         {
-            string UrlRequest = "https://manage.ackroo.com" + path;
+            string UrlRequest = Ackroo.Client.Constants.ackroo_oauth_url + path;
             return (UrlRequest);
         }
 

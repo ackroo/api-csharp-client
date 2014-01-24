@@ -6,6 +6,8 @@ namespace Ackroo.Client
 {
     static class Constants
     {
+        public const string ackroo_oauth_url = "https://manage.ackroo.com";
+        public const string ackroo_api_url = "https://api.ackroo.net";
         public const string oauth_scopes = "terminal transaction";
         public const string grant_type = "authorization_code";
         public const string client_id = "a22b1ee5fde572f5f3ec289a22621fe92208f4ae2059f9603cc663abcb303d3b";
@@ -25,7 +27,7 @@ namespace Ackroo.Client
 
                 string terminal = args[0];
                 string card = args[1];
-                
+
                 Console.WriteLine("Checking card balance\n");
                 card_balance(terminal, card);
 
