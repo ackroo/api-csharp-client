@@ -25,24 +25,26 @@ namespace Ackroo.Client
                 Console.WriteLine("Getting oauth access token\n");
                 oauth_flow();
 
-                string terminal = args[0];
-                string card = args[1];
+                if (Program.oauth_token != "")
+                {
+                    string terminal = args[0];
+                    string card = args[1];
 
-                Console.WriteLine("Checking card balance\n");
-                card_balance(terminal, card);
+                    Console.WriteLine("Checking card balance\n");
+                    card_balance(terminal, card);
 
-                Console.WriteLine("Fund gift for $20\n");
-                fund_gift_transaction(terminal, card, 20);
+                    Console.WriteLine("Fund gift for $20\n");
+                    fund_gift_transaction(terminal, card, 20);
 
-                Console.WriteLine("Redeem gift for $10\n");
-                redeem_gift_transaction(terminal, card, 10);
+                    Console.WriteLine("Redeem gift for $10\n");
+                    redeem_gift_transaction(terminal, card, 10);
 
-                Console.WriteLine("Fund loyalty for $1000\n");
-                fund_loyalty_transaction(terminal, card, 1000);
+                    Console.WriteLine("Fund loyalty for $1000\n");
+                    fund_loyalty_transaction(terminal, card, 1000);
               
-                Console.WriteLine("Redeem loyalty for $30\n");
-                redeem_loyalty_transaction(terminal, card, 30);
-
+                    Console.WriteLine("Redeem loyalty for $30\n");
+                    redeem_loyalty_transaction(terminal, card, 30);
+                }
                 Console.WriteLine("Done !!!");
             }
             catch (Exception e)
@@ -76,8 +78,10 @@ namespace Ackroo.Client
                     System.Threading.Thread.Sleep(code.interval * 1000);
                     code.expires_in -= code.interval;
                     if (code.expires_in == 0)
+                    {
                         Console.WriteLine("Activation PIN expired!\n");
-
+                        break;
+                    }
                     try
                     {
                         string token_response = Ackroo.Utils.Http.Client.HttpPost(oAuthTokenRequest, token_query);
@@ -90,7 +94,7 @@ namespace Ackroo.Client
                     catch (Exception e)
                     {
                         Ackroo.Utils.Json.OAuthTokenError error = _download_serialized_json_data<Ackroo.Utils.Json.OAuthTokenError>(e.Message);
-                        //Console.WriteLine(error.error_description + "\n");
+                        Console.WriteLine(error.error_description + "\n");
                         Console.WriteLine("Device code pending authorization by merchant ... \n");
                     }
                     
@@ -101,7 +105,7 @@ namespace Ackroo.Client
             catch (Exception e)
             {
                 Ackroo.Utils.Json.Error error = _download_serialized_json_data<Ackroo.Utils.Json.Error>(e.Message);
-                Console.WriteLine(e.Message);
+                Console.WriteLine("Debug: " + e.Message);
                 return;
             }
         }
