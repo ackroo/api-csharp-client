@@ -15,6 +15,11 @@ namespace Ackroo.Utils.Json
         public string Amount_Redeemed { get; set; }
     }
 
+    public class Device
+    {
+        public string device { get; set; }
+    }
+
     public class Card
     {
         public string Gift { get; set; }
